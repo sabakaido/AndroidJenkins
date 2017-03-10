@@ -3,7 +3,7 @@ package com.example.anikaido.jenkins.domain;
 /**
  * Created by anikaido on 2017/02/26.
  */
-public class JobStatusDomain {
+public class JobStatus {
     private String _class;
     private String name;
     private String color;

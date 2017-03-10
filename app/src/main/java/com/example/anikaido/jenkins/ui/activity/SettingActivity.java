@@ -3,6 +3,7 @@ package com.example.anikaido.jenkins.ui.activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.view.MotionEvent;
 import android.view.View;
@@ -33,6 +34,12 @@ public class SettingActivity extends AppCompatActivity {
     @BindView(R.id.setting_column)
     EditText mEditTextColumn;
 
+    @BindView(R.id.setting_like_filter)
+    EditText mEditTextLike;
+
+    @BindView(R.id.switch_switch)
+    SwitchCompat mSwitchCompat;
+
     private InputMethodManager mInputMethodManager;
 
     private SettingActivityHelper mHelper;
@@ -56,13 +63,10 @@ public class SettingActivity extends AppCompatActivity {
         mInputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         mHelper = new SettingActivityHelper(this);
 
-        String host = mHelper.getHost();
-        if (host == null || host.isEmpty()) {
-            return;
-        }
-
-        mEditTextHost.setText(host);
+        mEditTextHost.setText(mHelper.getHost());
+        mEditTextLike.setText(mHelper.getLike());
         mEditTextColumn.setText(String.valueOf(mHelper.getColumn()));
+        mSwitchCompat.setChecked(mHelper.isChecked());
     }
 
     /**
@@ -95,8 +99,12 @@ public class SettingActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         String text = mEditTextHost.getText().toString();
+        String like = mEditTextLike.getText().toString();
+        Boolean checked = mSwitchCompat.isChecked();
         Integer column = Integer.valueOf(mEditTextColumn.getText().toString());
         mHelper.saveHost(text);
+        mHelper.saveLike(like);
+        mHelper.saveCheck(checked);
 
         if (column > 0) {
             mHelper.saveColumn(column);

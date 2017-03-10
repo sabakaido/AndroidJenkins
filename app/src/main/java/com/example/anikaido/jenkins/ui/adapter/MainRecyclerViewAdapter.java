@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.anikaido.jenkins.R;
-import com.example.anikaido.jenkins.domain.JobStatusDomain;
+import com.example.anikaido.jenkins.domain.JobStatus;
 
 import java.util.List;
 
@@ -20,14 +20,14 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
 
     private LayoutInflater mLayoutInflater;
     private Context mContext;
-    public List<JobStatusDomain> mData;
+    public List<JobStatus> mData;
     private OnRecyclerListener mListener;
 
     public interface OnRecyclerListener {
         void onRecyclerClicked(View v, int position);
     }
 
-    public MainRecyclerViewAdapter(Context context, List<JobStatusDomain> data, OnRecyclerListener listener) {
+    public MainRecyclerViewAdapter(Context context, List<JobStatus> data, OnRecyclerListener listener) {
         mLayoutInflater = LayoutInflater.from(context);
         mContext = context;
         mData = data;
@@ -48,6 +48,8 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
                 holder.mView.setBackgroundColor(0xff3264c8);
             } else if (mData.get(position).getColor().equals("red")) {
                 holder.mView.setBackgroundColor(0xfff03434);
+            } else {
+                holder.mView.setBackgroundColor(0xffa0a0a0);
             }
         }
 

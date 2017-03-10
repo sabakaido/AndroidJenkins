@@ -2,6 +2,7 @@ package com.example.anikaido.jenkins.ui.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,7 +13,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import com.example.anikaido.jenkins.R;
-import com.example.anikaido.jenkins.domain.JobStatusDomain;
+import com.example.anikaido.jenkins.domain.JobStatus;
 import com.example.anikaido.jenkins.service.JenkinsService;
 import com.example.anikaido.jenkins.ui.adapter.MainRecyclerViewAdapter;
 import com.example.anikaido.jenkins.ui.helper.MainActivityHelper;
@@ -35,6 +36,12 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
     @BindView(R.id.main_setting_layout)
     LinearLayout mSettingRequiredLayout;
 
+    @BindView(R.id.main_error_layout)
+    LinearLayout mErrorLayout;
+
+    @BindView(R.id.refresh)
+    SwipeRefreshLayout mSwipeRefreshLayout;
+
     MainRecyclerViewAdapter mAdapter;
 
     MainActivityHelper mHelper;
@@ -47,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         ButterKnife.bind(this);
 
         setupToolBar();
+        mSwipeRefreshLayout.setOnRefreshListener(mOnRefreshListener);
         mHelper = new MainActivityHelper(this, new JenkinsService());
     }
 
@@ -61,15 +69,17 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
     @Override
     protected void onResume() {
         super.onResume();
+        setupView();
+    }
 
+    private void setupView() {
         if (mHelper.getHost().isEmpty()) {
             mSettingRequiredLayout.setVisibility(View.VISIBLE);
             mRecyclerView.setVisibility(View.GONE);
+            mErrorLayout.setVisibility(View.GONE);
         } else {
             mRecyclerView.setLayoutManager(new GridLayoutManager(this, mHelper.getColumn()));
             setupRecyclerViewContent();
-            mSettingRequiredLayout.setVisibility(View.GONE);
-            mRecyclerView.setVisibility(View.VISIBLE);
         }
     }
 
@@ -79,11 +89,27 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
     private void setupRecyclerViewContent() {
         final MainActivity activity = this;
 
-        mHelper.getJobStatus().subscribe(new Action1<List<JobStatusDomain>>() {
+        mHelper.getJobStatus().subscribe(new Action1<List<JobStatus>>() {
             @Override
-            public void call(List<JobStatusDomain> jobStatusDomainList) {
-                mAdapter = new MainRecyclerViewAdapter(activity, jobStatusDomainList, activity);
+            public void call(List<JobStatus> jobStatusList) {
+                mHelper.filterWithLike(jobStatusList);
+                mHelper.filterWithCheck(jobStatusList);
+
+                mAdapter = new MainRecyclerViewAdapter(activity, jobStatusList, activity);
                 mRecyclerView.setAdapter(mAdapter);
+
+                // 空っぽの時はなんかおかしい
+                if (jobStatusList.isEmpty()) {
+                    mSettingRequiredLayout.setVisibility(View.GONE);
+                    mRecyclerView.setVisibility(View.GONE);
+                    mErrorLayout.setVisibility(View.VISIBLE);
+                } else {
+                    mSettingRequiredLayout.setVisibility(View.GONE);
+                    mRecyclerView.setVisibility(View.VISIBLE);
+                    mErrorLayout.setVisibility(View.GONE);
+                }
+
+                mSwipeRefreshLayout.setRefreshing(false);
             }
         });
     }
@@ -114,4 +140,11 @@ public class MainActivity extends AppCompatActivity implements MainRecyclerViewA
         Intent intent = new Intent(this, SettingActivity.class);
         startActivity(intent);
     }
+
+    private SwipeRefreshLayout.OnRefreshListener mOnRefreshListener = new SwipeRefreshLayout.OnRefreshListener() {
+        @Override
+        public void onRefresh() {
+            setupView();
+        }
+    };
 }

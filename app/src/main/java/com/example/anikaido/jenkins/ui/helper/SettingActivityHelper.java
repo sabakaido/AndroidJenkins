@@ -27,6 +27,30 @@ public class SettingActivityHelper {
         return data.getString("host", "");
     }
 
+    public void saveLike(String like) {
+        SharedPreferences data = mActivity.getSharedPreferences("JenkinsData", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = data.edit();
+        editor.putString("like", like);
+        editor.apply();
+    }
+
+    public String getLike() {
+        SharedPreferences data = mActivity.getSharedPreferences("JenkinsData", Context.MODE_PRIVATE);
+        return data.getString("like", "");
+    }
+
+    public void saveCheck(Boolean isChecked) {
+        SharedPreferences data = mActivity.getSharedPreferences("JenkinsData", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = data.edit();
+        editor.putBoolean("check", isChecked);
+        editor.apply();
+    }
+
+    public Boolean isChecked() {
+        SharedPreferences data = mActivity.getSharedPreferences("JenkinsData", Context.MODE_PRIVATE);
+        return data.getBoolean("check", false);
+    }
+
     public void saveColumn(int column) {
         SharedPreferences data = mActivity.getSharedPreferences("JenkinsData", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = data.edit();

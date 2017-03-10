@@ -2,7 +2,7 @@ package com.example.anikaido.jenkins.service;
 
 import android.util.Log;
 
-import com.example.anikaido.jenkins.domain.JobStatusDomain;
+import com.example.anikaido.jenkins.domain.JobStatus;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -15,7 +15,6 @@ import java.util.List;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
 import rx.Single;
 import rx.SingleSubscriber;
 import rx.android.schedulers.AndroidSchedulers;
@@ -26,13 +25,13 @@ import rx.schedulers.Schedulers;
  */
 public class JenkinsService {
 
-    public Single<List<JobStatusDomain>> getJobStatusList(String host) {
+    public Single<List<JobStatus>> getJobStatusList(String host) {
 
         final String url = "http://" + host + "/api/json";
 
-        return Single.create(new Single.OnSubscribe<List<JobStatusDomain>>() {
+        return Single.create(new Single.OnSubscribe<List<JobStatus>>() {
             @Override
-            public void call(SingleSubscriber<? super List<JobStatusDomain>> singleSubscriber) {
+            public void call(SingleSubscriber<? super List<JobStatus>> singleSubscriber) {
                 try {
                     OkHttpClient client = new OkHttpClient();
 
@@ -40,15 +39,15 @@ public class JenkinsService {
                             .url(url)
                             .build();
 
-                    Response response = client.newCall(request).execute();
-
-                    String jsonString = response.body().string();
-                    JSONObject json = new JSONObject(jsonString);
+                    JSONObject json = new JSONObject(
+                            client.newCall(request)
+                                    .execute()
+                                    .body()
+                                    .string()
+                    );
 
                     ObjectMapper mapper = new ObjectMapper();
-
-                    List<JobStatusDomain> jobStatusDomainList = mapper.readValue(json.get("jobs").toString(), new TypeReference<List<JobStatusDomain>>() {
-                    });
+                    List<JobStatus> jobStatusDomainList = mapper.readValue(json.get("jobs").toString(), new TypeReference<List<JobStatus>>() {});
 
                     singleSubscriber.onSuccess(jobStatusDomainList);
                     return;
@@ -59,7 +58,7 @@ public class JenkinsService {
                 } catch (Exception e) {
                     Log.d("hoge", e.getMessage());
                 }
-                singleSubscriber.onSuccess(new ArrayList<JobStatusDomain>());
+                singleSubscriber.onSuccess(new ArrayList<JobStatus>());
             }
         }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
     }
